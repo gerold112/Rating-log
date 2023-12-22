@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Rating log</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Navbar-With-Button-icons.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/made.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Gemstones&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Rubik+Spray+Paint&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+</head>
+
+<body style="background: #a6a1a1; background-image: url('fon1.jpg')">
+    <nav  class="navbar navbar-light navbar-expand-md py-3">
+        <div class="container">
+            <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"></button>
+            <header>
+                <div>
+                  <a href="index.html">О программе</a>
+                    <a href="import.html">Upload</a>
+                    <a href="edit.html">Редактирование</a>
+                    <a href="export.html">Download</a>
+                    <a href="graphs.html">Вывод графиков</a>
+                    <a href="tables.html">Вывод Таблицы</a>
+                    <a href="help.html">Помощь</a>
+                </div>
+            </header>
+        </div>
+    </nav>
+    <div class="container">
+
+                    <div class="card-body">
+                        <h1 class="m-0">Таблица с данными</h1>
+                       
+                        <div class="col-12">
+							<div class="table-responsive mt-3" id="first">
+								<table class="table" id="students"></table>
+							</div>
+                        </div>
+						<div class="col-12">
+							<div class="table-responsive mt-3">
+								<table class="table" id="groupping"></table>
+							</div>
+                        </div>
+                    </div>
+    </div>
+
+    
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script>
+	class Groupping {
+        clazz
+        subject
+        grades = []
+      }
+      const students_table = document.getElementById("students")
+      const groupping_table = document.getElementById("groupping")
+      const mapping = {
+        "name": "Имя",
+        "class": "Класс",
+        "informatics": "Информатика",
+        "physics": "Физика",
+        "mathemathics": "Математика",
+        "literature": "Литература",
+        "music": "Музыка"
+      }
+      function subject(s) {
+        s = s.trim()
+        return mapping[s] || col
+      }
+      function prec(v) {
+        return (v).toFixed(2)
+      }
+      function buildTable() {
+        while (students_table.hasChildNodes()) {
+          students_table.firstChild.remove()
+        }
+        while (groupping_table.hasChildNodes()) {
+          groupping_table.firstChild.remove()
+        }
+        let json = JSON.parse(localStorage.getItem('journal'))
+        const subjects = json[0].slice(2)
+        const classes = new Set()
+        for (let y = 1; y < json.length; y++) {
+          classes.add(json[y][1])
+        }
+        const grouppings = []
+        for (const s of subjects) {
+          for (const c of classes) {
+            const group = new Groupping()
+            group.clazz = c
+            group.subject = s
+            grouppings.push(group)
+          }
+          const group = new Groupping()
+          group.clazz = ""
+          group.subject = s
+          grouppings.push(group)
+        }
+        for (let y = 1; y < json.length; y++) {
+          for (let x = 2; x < json[0].length; x++) {
+            for (const group of grouppings) {
+              if ((group.clazz === json[y][1] || !group.clazz) && (group.subject === json[0][x])) {
+                group.grades.push(parseInt(json[y][x]))
+              }
+            }
+          }
+        }
+        for (let y = 0; y < json.length; y++) {
+          const row_el = document.createElement("tr")
+          for (let col of json[y]) {
+            if (y === 0) {
+              col = subject(col)
+            }
+            const col_el = document.createElement(y === 0 ? "th" : "td")
+            col_el.innerText = col
+            row_el.appendChild(col_el)
+          }
+          students_table.appendChild(row_el)
+        }
+        
+        {
+          const row_el = document.createElement("tr")
+          for(const col of ["Предмет, Класс", "Средняя оценка", "Медиана", "Кол. 1", "Проц. 1", "Кол. 2", "Проц. 2", "Кол. 3", "Проц. 3", "Кол. 4", "Проц. 4", "Кол. 5", "Проц. 5"]) {
+            const col_el = document.createElement("th")
+            col_el.innerText = col
+            row_el.appendChild(col_el)
+          }
+          groupping_table.appendChild(row_el)
+        }
+        for (const group of grouppings) {
+          group.grades.sort()
+          let sum = 0
+          let min = 5
+          let max = 1
+          let median = 0
+          let grades_amt = [0,0,0,0,0]
+          
+          for (const v of group.grades) {
+            sum += v
+            min = Math.min(min, v)
+            max = Math.max(min, v)
+            grades_amt[v-1]++
+          }
+          if (group.grades.length !== 0) {
+            if (group.grades.length % 2 === 0) {
+              median = (group.grades[group.grades.length / 2] + group.grades[group.grades.length / 2 + 1]) / 2
+            } else {
+              median = group.grades[group.grades.length / 2 + 1]
+            }
+          }
+
+          const row_el = document.createElement("tr")
+          const name_el = document.createElement("td")
+          const avg_el = document.createElement("td")
+          const median_el = document.createElement("td")
+          name_el.innerText = subject(group.subject) + ", " + (group.clazz || "По всем классам")
+          avg_el.innerText = prec(sum / group.grades.length)
+          median_el.innerText = prec(median)
+          row_el.appendChild(name_el)
+          row_el.appendChild(avg_el)
+          row_el.appendChild(median_el)
+          for(let g = 0; g < 5; g++) {
+            const t = document.createElement("td")
+            const p = document.createElement("td")
+            t.innerText = grades_amt[g]
+            p.innerText = Math.round(100 * grades_amt[g] / group.grades.length) + "%"
+            row_el.appendChild(t)
+            row_el.appendChild(p)
+          }
+          groupping_table.appendChild(row_el)
+        }
+      }
+	  buildTable();
+	</script>
+	
+</body>
+
+</html>

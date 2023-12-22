@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<title>Журнал оценок </title>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Test1</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Navbar-With-Button-icons.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/made.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Rubik+Gemstones&display=swap" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Rubik+Spray+Paint&display=swap" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+</head>
+
+<body style= "background: #a6a1a1; background-image: url('fon1.jpg')">
+    <nav  class="navbar navbar-light navbar-expand-md py-3">
+        <div class="container">
+            <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"></button>
+            <header>
+                <div>
+					<a href="index.html">О программе</a>
+                    <a href="import.html">Upload</a>
+                    <a href="edit.html">Редактирование</a>
+                    <a href="export.html">Download</a>
+                    <a href="graphs.html">Вывод графиков</a>
+                    <a href="tables.html">Вывод Таблицы</a>
+                    <a href="help.html">Помощь</a>
+                </div>
+            </header>
+        </div>
+    </nav>
+    <div class="container">
+
+		<h3>Редактирование файла</h3>
+
+		<div class="col-3 mb-2">
+			<div class="input-group">
+				<input id="fio-input" type="text" class="form-control" placeholder="FIO">
+			</div>
+		</div>
+
+		<div class="col-5 mb-2">
+			<button class="btn btn-primary" id="add-user">
+				add
+			</button>
+
+			<button class="btn btn-danger" id="remove-user">
+				delete
+			</button>
+		</div>
+
+		<div class="row" style="margin-top: 70px;">
+			<div class="table-responsive mt-3"  >
+				<h1 class="text-center mt-5 mb-5">Загрузка...</h1>
+			</div>
+         </div>
+    </div>
+
+    
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+	<script src="assets/js/SimpleTableCellEditor.es6.min.js"></script>
+
+	<script>
+		$(document).ready(function () {
+			const j = JSON.parse(localStorage.getItem('journal'));
+			renderTable(j);
+		});
+
+		// Добавляем слушатель на нажатие кнопки "Добавить человека"
+		$('#add-user').on("click", function () {
+			const input = $('#fio-input');
+
+			// Получаем данные из поля ввода
+			const fio = input.val();
+			// Если ничего не введено, прекращаем выполнение
+			if (!fio) return;
+
+			// Получаем сохраненный массив из LocalStorage
+			let data = JSON.parse(localStorage.getItem('journal'));
+			// Если он не пустой
+			if (data && data.length > 0) {
+				// Добавляем нового человека в виде массива
+				// в конец нашего массива с людьми, который мы получили из LocalStorage,
+				// где в 0 ячейке ФИО, а в остальных оценки равные 0
+				data.push([fio, 0, 0, 0, 0, 0, 0]);
+				localStorage.setItem('journal', JSON.stringify(data));
+				// Очищаем поле ввода
+				input.val('');
+				// Отрисуем всю таблицу с обновленными данными
+				renderTable(data)
+			} else {
+				alert('Сначала загрузите данные!')
+			}
+		});
+
+		// Добавляем слушатель на нажатие кнопки "Добавить человека"
+		$('#remove-user').on("click", function () {
+			const input = $('#fio-input');
+
+			// Получаем данные из поля ввода
+			const fio = input.val();
+			// Если ничего не введено, прекращаем выполнение
+			if (!fio) return;
+
+			// Получаем сохраненный массив из LocalStorage
+			let data = JSON.parse(localStorage.getItem('journal'));
+			// Если он не пустой
+			if (data && data.length > 0) {
+				// Фильтруем массив по имени, т.е. если ФИО равно тому, что ввели в инпут,
+				// убираем массив из массива полученного из LocalStorage
+				const filteredArray = data.filter(array => array[0] !== fio)
+				localStorage.setItem('journal', JSON.stringify(filteredArray));
+
+				if (filteredArray.length === data.length) {
+					alert('Никого не удалили')
+				}
+
+				// Очищаем поле ввода
+				input.val('');
+				// Отрисуем всю таблицу с обновленными данными
+				renderTable(filteredArray)
+			} else {
+				alert('Сначала загрузите данные!')
+			}
+		});
+
+		// Функция для отрисовки таблицы
+		function renderTable(data) {
+			let head = '';
+
+			data[0].forEach(function (item) {
+				head += `<th>${item}</th>`;
+			})
+
+			let body = ''
+			let tempRow;
+
+			for (let i = 1; i != data.length; i++) {
+				tempRow = '';
+
+				data[i].forEach(function (item) {
+					tempRow += `<td class="editMe">${item}</td>`;
+				});
+
+				body += `
+					<tr data-index="${i}">
+					 ${tempRow}
+					</tr>
+				`;
+			}
+
+
+			let a = `
+				<table style="border:none;" class="table" id="sheesh">
+				   <thead>
+					  <tr>
+						 ${head}
+					  </tr>
+				   </thead>
+				   <tbody>
+					  ${body}
+				   </tbody>
+				</table>
+			`;
+
+			$('.table-responsive').html(a);
+
+			let simpleEditor = new SimpleTableCellEditor("sheesh", {navigation: false});
+			simpleEditor.SetEditableClass("editMe");
+        
+			
+			$('#sheesh').on("cell:edited", function (event) {
+				try{
+				
+				const tableRow = $(event.element).parent()[0];
+				
+				const indexRow = $(tableRow).data('index');
+				
+				const modifiedArray = Array.from($(tableRow).find('td')).map(item => item.innerText);
+
+				
+				let data = JSON.parse(localStorage.getItem('journal'));
+				
+				if (data && data.length > 0) {
+					
+					const mappedArray = data.map((item, index) => {
+						
+						if (index === indexRow) {
+							return modifiedArray;
+						}
+						
+						return item;
+					})
+					
+					localStorage.setItem('journal', JSON.stringify(mappedArray));
+				}
+			}catch(err){
+				alert ('Произошла Ошибка');
+		    }
+		});
+	
+	}
+	</script>
+</body>
+
+</html>

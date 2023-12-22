@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Rating log</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Navbar-With-Button-icons.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/made.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Rubik+Gemstones&display=swap" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Rubik+Spray+Paint&display=swap" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+</head>
+
+<body style= "background: #a6a1a1; background-image: url('fon1.jpg')">
+    <nav  class="navbar navbar-light navbar-expand-md py-3">
+        <div class="container">
+            <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"></button>
+            <header>
+                <div>
+					<a href="index.html">О программе</a>
+                    <a href="import.html">Upload</a>
+                    <a href="edit.html">Редактирование</a>
+                    <a href="export.html">Download</a>
+                    <a href="graphs.html">Вывод графиков</a>
+                    <a href="tables.html">Вывод Таблицы</a>
+                    <a href="help.html">Помощь</a>
+                </div>
+            </header>
+        </div>
+    </nav>
+    <div class="container">
+                    <div class="card-body">
+                        <h2 class="m-0">Все графики</h2>
+                      
+                        <div class="row">
+							<div class="col-12 col-lg-5">
+								<canvas id="myChart" width="100" height="100"></canvas>
+							</div>
+							<div class="col-12 offset-1 col-lg-5">
+								<canvas id="myChart2" width="200" height="200"></canvas>
+							</div>
+                        </div>
+                        <h2 class="m-0 mt-4">Оценки avg</h2>
+						<div class="row" id="average_foreach_class">
+							
+                        </div>
+					</div>
+    </div>
+
+    
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script>
+	const ctx = document.getElementById('myChart').getContext('2d');
+	const ctx2 = document.getElementById('myChart2').getContext('2d');
+	
+	window.j = JSON.parse(localStorage.getItem('journal'));
+	
+	window.labels = () => {
+		var a = []
+		
+		for (var i = 0; i != window.j[0].length; i++)
+			if (window.j[0][i] != 'name' && window.j[0][i] != 'class')
+				a.push(window.j[0][i])
+		return a;
+	}
+	
+	window.count = j.length - 1;
+	
+	window.data = () => {
+		var a = []
+		
+		for (var i = 0; i != window.labels().length; i++) {
+			if (a[i] == undefined) {
+				a[i] = 0;
+			}
+		}
+		
+		for (var n = 1; n != window.j.length; n++)
+			for (var f = 2; f != window.j[n].length; f++)
+				a[f-2] += Number(window.j[n][f]);
+				//a[n-2] += Number();
+		
+		for (var i = 0; i != window.labels().length; i++) {
+			a[i] = a[i] / count;
+		}
+		return a;
+	}
+	
+	
+	window.labels2 = () => {
+		var a = []
+		
+		for (var i = 1; i != window.j.length; i++)
+			a[window.j[i][1]] = true;
+		return a;
+	}
+	
+	
+	window.count = j.length - 1;
+	
+	window.data2 = () => {
+		var a = window.labels2(); //summ of middle grade of each stud
+		var b = window.labels2(); //count of stud
+		
+		for (var i = 0; i != Object.keys(a).length; i++) {
+			a[Object.keys(a)[i]] = 0;
+			b[Object.keys(a)[i]] = 0;
+		}
+
+		for (var i = 1; i != window.j.length; i++) {
+			var temp = 0;
+			for (var j = 2; j != window.j[1].length; j++) {
+				temp += Number(window.j[i][j]);
+			}
+			a[window.j[i][1]] += temp / (window.j[1].length - 2);
+			b[window.j[i][1]]++;
+		}
+		
+		for (var i = 0; i != Object.keys(a).length; i++) {
+			a[Object.keys(a)[i]] = a[Object.keys(a)[i]] / b[Object.keys(a)[i]];
+		}
+		
+		return a;
+	}
+	
+	
+	
+	const myChart = new Chart(ctx, {
+		type: 'bar',
+		data: {
+			labels: window.labels(),
+			datasets: [{
+				label: 'Средний балл по предметам',
+				data: window.data(),
+				backgroundColor: [
+					'rgba(46, 125, 26, 1)',
+					'rgba(28, 26, 125, 1)',
+					'rgba(125, 26, 86, 1)',
+					'rgba(75, 192, 192, 1)',
+					'rgba(153, 102, 255, 1)',
+					'rgba(255, 159, 64, 1)'
+				],
+				borderColor: [
+					'rgba(255, 99, 132, 1)',
+					'rgba(54, 162, 235, 1)',
+					'rgba(255, 206, 86, 1)',
+					'rgba(75, 192, 192, 1)',
+					'rgba(153, 102, 255, 1)',
+					'rgba(255, 159, 64, 1)'
+				],
+				borderWidth: 1
+			}]
+		},
+		options: {
+			scales: {
+				y: {
+					beginAtZero: true
+				}
+			}
+		}
+	});
+	
+	
+	const myChart2 = new Chart(ctx2, {
+		type: 'bar',
+		data: {
+			labels: Object.keys(window.labels2()),
+			datasets: [{
+				label: 'Средний балл по классам',
+				data: Object.values(window.data2()),
+				backgroundColor: [
+					'rgba(178, 29, 12, 1)',
+					'rgba(54, 162, 235, 1)',
+					'rgba(1, 206, 106, 1)'
+				],
+				borderColor: [
+					'rgba(178, 29, 12, 1)',
+					'rgba(54, 162, 235, 1)',
+					'rgba(1, 206, 106, 1)'
+				],
+				borderWidth: 1
+			}]
+		},
+		options: {
+			scales: {
+				y: {
+					beginAtZero: true
+				}
+			}
+		}
+	});
+	
+	
+	
+	window.afc = []
+	
+	Object.keys(window.labels2()).forEach(function(item) {
+		
+		for (var i = 0; i != window.labels().length; i++) {
+			if (afc[item] == undefined) {
+				afc[item] = [];
+				afc[item]["count"] = 0;
+			}
+			
+			if (afc[item][window.labels()[i]] == undefined) {
+				afc[item][window.labels()[i]] = 0;
+			}
+		}
+		
+	});
+	
+	
+	j.forEach(function(item, index) {
+		if (index == 0)
+			return;
+		
+		afc[item[1]]["count"]++;
+		
+		item.forEach(function(f, i) {
+			if (i == 0 || i == 1 )
+				return;
+				
+			afc[item[1]][window.labels()[i-2]] += Number(f);
+		})
+		
+	})
+	
+	
+	for (var c in afc) {
+		for (var g in afc[c]) {
+			if (g == "count")
+				continue;
+			
+			afc[c][g] /= afc[c]["count"];
+		}
+	} 
+	
+	
+	function getData(g) {
+		var a = [];
+		
+		for (var i in g) {
+			if (i != "count")
+				a.push(g[i]);
+		}
+		
+		return a;
+	};
+	
+	
+	i = 1;
+	for (var c in afc) {
+		
+		window.temp = c;
+		
+		$('#average_foreach_class').append(
+		`
+		<div class="mt-4 col-12 col-lg-5` + ((i % 2) == 0 ? " offset-1" : "") + `">
+			<canvas id="` + "chart_" + c + `" width="100" height="100"></canvas>
+		</div>
+		`
+		);
+		i++;
+		
+		
+		new Chart(document.getElementById('chart_' + c).getContext('2d'), {
+			type: 'bar',
+			data: {
+				labels: window.labels(),
+				datasets: [{
+					label: 'Средние баллы по предмета в ' + window.temp,
+					data: getData(afc[c]),
+					backgroundColor: [
+					'rgba(46, 125, 26, 1)',
+					'rgba(28, 26, 125, 1)',
+					'rgba(125, 26, 121, 1)',
+					'rgba(75, 192, 192, 1)',
+					'rgba(153, 102, 255, 1)',
+					'rgba(255, 159, 64, 1)'
+					],
+					borderColor: [
+						'rgba(46, 125, 26, 1)',
+						'rgba(28, 26, 125, 1)',
+						'rgba(125, 26, 121, 1)',
+						'rgba(75, 192, 192, 1)',
+						'rgba(153, 102, 255, 1)',
+						'rgba(255, 159, 64, 1)'
+					],
+					borderWidth: 2
+				}]
+			},
+			options: {
+				scales: {
+					y: {
+						beginAtZero: true
+					}
+				}
+			}
+		});
+				
+	} 
+	
+	
+	</script>
+</body>
+
+</html>
